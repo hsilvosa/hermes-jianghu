@@ -1,0 +1,66 @@
+<!doctype html>
+<!--
+  Preview harness: loads desktop/plugin.js outside Hermes with a stub SDK, sets the
+  three theme variables the scenes read, and applies the theme's customCSS.
+  Serve the repo root (python -m http.server) and open
+  /test/harness.html?theme=cangfeng&mode=dark&intro=1&t=40
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<script type="importmap">
+{ "imports": { "@hermes/plugin-sdk": "./sdk-stub.js" } }
+</script>
+<style>
+  html, body { margin: 0; height: 100%; font: 15px system-ui, sans-serif; }
+  .card { position: fixed; left: 50%; top: 38%; transform: translate(-50%, -50%); text-align: center; color: var(--theme-foreground); }
+  /* Hermes's own wordmark face, copied from the local install by media.py (not committed) */
+  @font-face { font-family: 'Collapse'; font-weight: 700; src: url('fonts/Collapse-Bold.woff2') format('woff2'); }
+  /* stand-in for the stock wordmark: text-midground, plus-lighter, dark:text-foreground/90 */
+  .wordmark { font: 700 min(9vw, 110px)/0.9 'Collapse', Impact, sans-serif; text-transform: uppercase; white-space: nowrap; letter-spacing: 0.08em; margin: 0 0 8px; color: var(--theme-midground); mix-blend-mode: plus-lighter; }
+  .dark .wordmark { color: color-mix(in srgb, var(--theme-foreground) 90%, transparent); }
+  .composer { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); width: min(720px, 80vw); height: 90px; }
+</style>
+</head>
+<body>
+<div id="intro" class="card"><p class="wordmark"><span><span>HERMES AGENT</span></span></p><p>Lights on. Start typing.</p></div>
+<div class="composer" data-slot="composer-surface"></div>
+<script type="module">
+  const q = new URLSearchParams(location.search)
+  const theme = q.get('theme') || 'cangfeng'
+  const dark = q.get('mode') === 'dark'
+  // intro=0: a chat with text, so no empty-chat title and the scene fades back
+  if (q.get('intro') !== '0') document.getElementById('intro').dataset.slot = 'aui_intro'
+  else document.getElementById('intro').hidden = true
+  window.__jianghuTime = Number(q.get('t') || 0)
+
+  const themes = {}
+  const plugin = (await import('../desktop/plugin.js')).default
+  plugin.register({ register: c => { themes[c.id] = c.data }, onDispose: () => {} })
+
+  const data = themes[theme]
+  const c = dark ? data.darkColors : data.colors
+  const root = document.documentElement
+  root.style.setProperty('--ui-bg-chrome', c.background)
+  root.style.setProperty('--ui-bg-editor', c.card)
+  root.style.setProperty('--theme-foreground', c.foreground)
+  root.style.setProperty('--theme-midground', c.midground)
+  root.style.setProperty('--dt-midground-foreground', c.midgroundForeground)
+  const style = document.createElement('style')
+  style.textContent = data.customCSS
+  document.head.append(style)
+  root.classList.toggle('dark', dark)
+  root.dataset.hermesTheme = theme
+  if (q.get('glass') === '1') {
+    // Window Translucency: Hermes makes <html> transparent and the desktop shows
+    // through. A loud gradient stands in for the desktop; none of it may show.
+    root.dataset.hermesGlass = ''
+    root.style.setProperty('background-color', 'transparent', 'important')
+    const desk = document.createElement('div')
+    desk.style.cssText = 'position:fixed;inset:0;z-index:-2;background:conic-gradient(red,lime,blue,magenta,red)'
+    document.body.prepend(desk)
+  }
+  setTimeout(() => { document.title = 'ready' }, 2500)
+</script>
+</body>
+</html>

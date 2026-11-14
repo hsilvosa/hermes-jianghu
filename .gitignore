@@ -6,6 +6,10 @@
 !/plugin.yaml
 !/desktop/
 !/assets/
+!/test/
+/test/shots/
+/test/fonts/
+/test/__pycache__/
 
 !/media/
 /media/*
