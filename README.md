@@ -36,7 +36,7 @@ You need Hermes Desktop 0.22.2 or later.
 ## Small decisions, already made
 
 - **The chat stays readable.** The scene is at full strength only on an empty chat. Behind a conversation or any other page it fades to about a third.
-- **The usual wordmark.** The empty chat keeps Hermes's own HERMES AGENT lettering. In light mode it is drawn in the theme's cinnabar, because the stock blend turns it near-white on paper.
+- **A title for each scene.** A new chat keeps Hermes's own HERMES AGENT lettering, dressed for the theme. Feisheng: wet black ink with a cinnabar seal (飛昇, "ascend") at its corner and an italic book line under it. Cangfeng Lake: jade pixel letters on a stepped cinnabar shadow, a 蒼峰湖 place tag above and a dithered shore line below.
 - **The colours are yours to change.** Both scenes read the theme's paper, ink and accent, so another accent in **Settings → Appearance** recolours the sun, the tab marks and the pagoda.
 - **Opaque by design.** The scene sits on its own paper, so **Window Translucency** has no visible effect while a Jianghu theme is active.
 - **Easy on the machine.** Feisheng paints once (on load, resize and theme change) with Canvas 2D; afterwards only CSS animations run. Cangfeng draws one WebGL shader at one pixel per 3px cell, 20 frames a second, and stops while the window is hidden.

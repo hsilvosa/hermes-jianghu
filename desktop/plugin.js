@@ -960,14 +960,16 @@ ${T} [data-slot="kbd"] {
   color: var(--jh-dim) !important;
 }
 
-/* The stock HERMES AGENT wordmark stays as it is. In light mode its
-   plus-lighter blend turns the letters into near-white over paper, so there
-   it is drawn as plain ink in the theme's accent instead. */
-${T}:not(.dark) .wordmark {
+/* The HERMES AGENT wordmark keeps its face and size; each theme dresses it
+   (see FEISHENG_CSS and CANGFENG_CSS). The stock plus-lighter blend washes
+   it out on paper, so both themes draw it with a normal blend. Effects use
+   text-shadow and absolutely placed pseudo-elements only: the fitted letters
+   overflow their box, so a background-clip fill would lose the last letters,
+   and a flex item would change the fitted size. */
+${T} .wordmark {
+  position: relative;
+  overflow: visible;
   mix-blend-mode: normal !important;
-}
-${T}:not(.dark) .wordmark > span:not([aria-hidden]) > span {
-  color: var(--theme-midground);
 }
 `
 }
@@ -979,6 +981,47 @@ const FEISHENG_CSS = `${baseCSS('feisheng', {
   sidebarMix: 82,
   radius: 3
 })}
+/* Empty chat: the wordmark in wet ink, stamped with a cinnabar seal (飛昇,
+   "ascend") at its top right, and a line of book type under it. */
+${sel('feisheng')} .wordmark > span:not([aria-hidden]) > span {
+  color: var(--theme-foreground);
+  text-shadow:
+    0 0 0.012em var(--theme-foreground),
+    0.01em 0.02em 0.05em color-mix(in srgb, var(--theme-foreground) 30%, transparent),
+    -0.02em 0.01em 0.12em color-mix(in srgb, var(--theme-foreground) 12%, transparent);
+}
+${sel('feisheng')} .wordmark::after {
+  content: '飛昇' / '';
+  position: absolute;
+  top: -2.2rem;
+  right: -1.4rem;
+  width: 3.6rem;
+  height: 3.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font: 400 1.5rem/1 'KaiTi', 'STKaiti', 'Kaiti SC', 'BiauKai', serif;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--dt-midground-foreground);
+  background: var(--theme-midground);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 2px var(--theme-midground),
+    inset 0 0 0 3px color-mix(in srgb, var(--dt-midground-foreground) 55%, transparent);
+  transform: rotate(-4deg);
+  opacity: 0.92;
+  pointer-events: none;
+}
+${sel('feisheng')} [data-slot="aui_intro"] p:not(.wordmark) {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  font-style: italic;
+  font-size: 1.0625rem;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--theme-foreground) 68%, transparent);
+}
+
 ${sel('feisheng')} [data-jianghu-scene] canvas { transition: opacity 600ms ease; }
 ${sel('feisheng')} [data-jianghu-scene]:not(.on) canvas { opacity: 0; }
 ${sel('feisheng')} [data-jianghu-scene] .jh-mist-a { animation: jh-drift 140s ease-in-out infinite alternate; }
@@ -1001,6 +1044,50 @@ ${sel('cangfeng')} [data-tree-tab] {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   text-transform: uppercase;
+}
+
+/* Empty chat: the wordmark as a pixel title, jade letters on a stepped
+   cinnabar shadow one dither cell (3px) at a time, a place-name tag above
+   it, and a dithered shore line below. */
+${sel('cangfeng')} .wordmark > span:not([aria-hidden]) > span {
+  color: color-mix(in oklch, #2f4a44 85%, var(--theme-foreground));
+  text-shadow:
+    3px 3px 0 color-mix(in srgb, var(--theme-midground) 90%, transparent),
+    6px 6px 0 color-mix(in srgb, var(--theme-midground) 35%, transparent);
+}
+${sel('cangfeng')}.dark .wordmark > span:not([aria-hidden]) > span {
+  color: #cfe0d6;
+}
+${sel('cangfeng')} .wordmark::before {
+  content: '蒼峰湖 · Cangfeng Lake' / '';
+  position: absolute;
+  left: 0.15em;
+  bottom: calc(100% + 0.6rem);
+  font: 500 0.6875rem/1 var(--font-mono, ui-monospace, Consolas, monospace);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--theme-foreground) 60%, transparent);
+  pointer-events: none;
+}
+${sel('cangfeng')} .wordmark::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.55rem);
+  height: 6px;
+  background: ${checker('var(--theme-midground)').replace('2px 2px', '6px 6px')};
+  opacity: 0.85;
+  pointer-events: none;
+}
+${sel('cangfeng')} [data-slot="aui_intro"] p:not(.wordmark) {
+  margin-top: 1.1rem;
+  font-family: var(--font-mono, ui-monospace, Consolas, monospace);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--theme-foreground) 62%, transparent);
 }
 `
 
