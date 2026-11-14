@@ -1,7 +1,7 @@
-name: hermes-borealis
-version: "0.1.1"
-description: "A Hermes Desktop theme with a live dithered landscape behind the window: an aurora over mountains and a lake by night, a two-ink dawn by day. Unofficial; not affiliated with Nous Research."
-author: Adolanium
+name: hermes-jianghu
+version: "0.1.0"
+description: "Jianghu: two wuxia landscapes for Hermes Desktop. An ink-wash mountain scroll on rice paper, and a dithered karst lake with a pagoda, a boat and passing rain. Forked from Borealis. Unofficial; not affiliated with Nous Research."
+author: hsilvosa
 manifest_version: 1
 kind: standalone
 requires_hermes: ">=0.22.2"
