@@ -528,11 +528,13 @@ float scene(vec2 uv, float t, float rain, out float ground, out float acc) {
   }
 
   // the pagoda stands on the middle range, on the right, in that range's own (parallax) coordinates
-  // on the highest crest of that range between a fifth and two fifths of the way across
-  float px = 0.3 * aspect;
+  // on the highest crest of that range right of centre. The search range is in
+  // scene units (heights), not a share of the width, so resizing the window or
+  // opening a side pane never moves it to another peak.
+  float px = 0.45;
   float crest = 0.0;
-  for (int i = 0; i < 12; i++) {
-    float cx = (0.2 + 0.2 * float(i) / 11.0) * aspect;
+  for (int i = 0; i < 24; i++) {
+    float cx = 0.25 + 0.45 * float(i) / 23.0;
     float k = karst(cx * 2.8 + 23.0, 23.0, 0.5);
     if (k > crest) {
       crest = k;

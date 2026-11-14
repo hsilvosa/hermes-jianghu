@@ -29,7 +29,9 @@
   const q = new URLSearchParams(location.search)
   const theme = q.get('theme') || 'cangfeng'
   const dark = q.get('mode') === 'dark'
+  // intro=0: a chat with text, so no empty-chat title and the scene fades back
   if (q.get('intro') !== '0') document.getElementById('intro').dataset.slot = 'aui_intro'
+  else document.getElementById('intro').hidden = true
   window.__jianghuTime = Number(q.get('t') || 0)
 
   const themes = {}
