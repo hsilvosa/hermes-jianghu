@@ -426,13 +426,13 @@ float pagoda(vec2 q, out float part, out float rim) {
   part = 0.0;
   rim = 0.0;
   float ax0 = abs(q.x);
-  if (ax0 > 4.6 || q.y < -2.5 || q.y > 13.5) {
+  if (ax0 > 8.0 || q.y < -4.0 || q.y > 13.5) {
     return 0.0;
   }
   // a stone plinth, and below it the rock it is built on, widening into the hill
   if (q.y < 0.0) {
     part = q.y < -0.45 ? 5.0 : 4.0;
-    return ax0 < (q.y < -0.45 ? 2.9 + (-q.y - 0.45) * 1.4 : 2.75) ? 1.0 : 0.0;
+    return ax0 < (q.y < -0.45 ? 3.0 + pow(-q.y - 0.45, 0.7) * 2.6 : 2.75) ? 1.0 : 0.0;
   }
   float y = 0.0;
   for (int i = 0; i < 5; i++) {
@@ -527,37 +527,6 @@ float scene(vec2 uv, float t, float rain, out float ground, out float acc) {
     ground = 1.0;
   }
 
-  // the pagoda stands on the middle range, on the right, in that range's own (parallax) coordinates
-  // on the highest crest of that range right of centre. The search range is in
-  // scene units (heights), not a share of the width, so resizing the window or
-  // opening a side pane never moves it to another peak.
-  float px = 0.45;
-  float crest = 0.0;
-  for (int i = 0; i < 24; i++) {
-    float cx = 0.25 + 0.45 * float(i) / 23.0;
-    float k = karst(cx * 2.8 + 23.0, 23.0, 0.5);
-    if (k > crest) {
-      crest = k;
-      px = cx;
-    }
-  }
-  float base = HORIZON + 0.36 * crest - 0.012;
-  float part;
-  float rim;
-  if (pagoda(vec2(x1 - px, p.y - base) / 0.019, part, rim) > 0.5) {
-    ground = 1.0;
-    float shade = x1 > px ? 1.0 : 0.0; // the side away from the sun and moon (right)
-    if (uNight < 0.5) {
-      // cinnabar walls (dithered darker on the shaded side), dark tiled roofs
-      tone = part == 1.0 ? (rim > 0.5 ? 0.7 : 1.0) : part == 2.0 ? 1.0 : part == 3.0 ? 0.85 : part == 4.0 ? 0.75 : part == 5.0 ? 0.55 : 0.85;
-      acc = part == 0.0 ? (shade > 0.5 ? 0.8 : 1.0) : 0.0;
-    } else {
-      // a dim shape against the night sky, moonlit roof edges and lamps in the windows
-      tone = part == 1.0 ? (rim > 0.5 && shade < 0.5 ? 0.62 : 0.32) : part == 3.0 ? 0.32 : part == 4.0 ? 0.22 : part == 5.0 ? 0.26 : (shade > 0.5 ? 0.16 : 0.22);
-      acc = part == 2.0 ? 1.0 : 0.0;
-    }
-  }
-
   float x2 = layerX(p, 1.0);
   float top2 = HORIZON + 0.2 * karst(x2 * 3.6 + 37.0, 37.0, 0.42);
   if (p.y < top2) {
@@ -567,10 +536,47 @@ float scene(vec2 uv, float t, float rain, out float ground, out float acc) {
     ground = 1.0;
   }
 
+  // the pagoda stands on the near range, on its highest crest right of centre, so it
+  // is as dark as the rock under it and never reads as floating when the scene fades.
+  // The search range is in scene units (heights), not a share of the width, so
+  // resizing the window or opening a side pane never moves it to another peak.
+  float px = 0.45;
+  float crest = 0.0;
+  for (int i = 0; i < 24; i++) {
+    float cx = 0.25 + 0.45 * float(i) / 23.0;
+    float k = karst(cx * 3.6 + 37.0, 37.0, 0.42);
+    if (k > crest) {
+      crest = k;
+      px = cx;
+    }
+  }
+  float base = HORIZON + 0.2 * crest - 0.004;
+  float part;
+  float rim;
+  float solid = 0.0; // the building stands in front of the mist that lies on the slopes
+  if (pagoda(vec2(x2 - px, p.y - base) / 0.016, part, rim) > 0.5) {
+    ground = 1.0;
+    solid = part == 5.0 ? 0.0 : 1.0;
+    float shade = x2 > px ? 1.0 : 0.0; // the side away from the sun and moon (right)
+    if (part == 5.0) {
+      // the rock it is built on, shaded like the range itself
+      tone = mix(mix(0.85, 0.12, uNight), mix(0.42, 0.06, uNight), smoothstep(base, HORIZON, p.y));
+      acc = 0.0;
+    } else if (uNight < 0.5) {
+      // cinnabar walls (dithered darker on the shaded side), dark tiled roofs
+      tone = part == 1.0 ? (rim > 0.5 ? 0.7 : 1.0) : part == 2.0 ? 1.0 : part == 3.0 ? 0.85 : part == 4.0 ? 0.6 : 0.85;
+      acc = part == 0.0 ? (shade > 0.5 ? 0.8 : 1.0) : 0.0;
+    } else {
+      // a dim shape against the night sky, moonlit roof edges and lamps in the windows
+      tone = part == 1.0 ? (rim > 0.5 && shade < 0.5 ? 0.62 : 0.32) : part == 3.0 ? 0.32 : part == 4.0 ? 0.24 : (shade > 0.5 ? 0.16 : 0.22);
+      acc = part == 2.0 ? 1.0 : 0.0;
+    }
+  }
+
   // mist: two drifting bands, at the feet of the near and middle ranges
   float fog = fbm(vec2(p.x * 1.1 - t * 0.012, p.y * 4.0 + 3.0));
   float mist = exp(-pow((p.y - HORIZON - 0.05) / 0.05, 2.0)) + 0.7 * exp(-pow((p.y - HORIZON - 0.19) / 0.045, 2.0));
-  float m = clamp(mist * smoothstep(0.32, 0.7, fog), 0.0, 1.0) * (0.75 + 0.25 * rain);
+  float m = clamp(mist * smoothstep(0.32, 0.7, fog), 0.0, 1.0) * (0.75 + 0.25 * rain) * (1.0 - 0.8 * solid);
   tone = mix(tone, mix(0.04, 0.2, uNight), m);
   acc *= 1.0 - m;
 
